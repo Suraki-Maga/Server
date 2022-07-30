@@ -2,8 +2,9 @@ const bcrypt = require("bcrypt")
 const { BCRYPT_WORK_FACTOR } = require("../config")
 const db = require("../db")
 const { BadRequestError, UnauthorizedError } = require("../utils/errors")
+const Driver = require("./driver")
 
-class User {
+class User extends Driver{
   static makePublicUser(user) {
     return {
       id: user.id,
