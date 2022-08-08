@@ -5,8 +5,9 @@ const generateToken=(data)=>jwt.sign(data,SECRET_KEY,{expiresIn:"24h"})
 
 const createUserJwt=(user)=>{
     const payload={
-        username:user.username,
+        data:user,
     }
+    console.log(payload)
     return generateToken(payload)
 }
 const validateToken=(token)=>{
