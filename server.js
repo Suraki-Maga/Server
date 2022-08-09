@@ -8,7 +8,7 @@ const security=require("./middleware/security")
 
 const authRoutes = require("./routes/auth")
 const driverRoutes = require("./routes/driverauth")
-
+const sessions = require('express-session');
 
 const app = express()
 
@@ -21,8 +21,16 @@ app.use(express.json())
 // log requests info
 app.use(morgan("tiny"))
 
+const oneMin = 1000 * 60;
+app.use(sessions({
+  secret: process.env.SECRET_KEY,
+  saveUninitialized:true,
+  cookie: { maxAge: oneMin },
+  resave: false
+}));
+
 //for every request, check  whether a token exist in the authorization header.
-//if it does, attach the decoded user to res.locals
+//if it does, attach the decoded user to res.local
 
 app.use(security.extractUserfromJwt)
 
