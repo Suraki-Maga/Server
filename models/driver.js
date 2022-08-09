@@ -61,8 +61,31 @@ class Driver{
         return "taken"
       }
 
+    }
+    static async resendOtp(id){
 
+      const query = `Select contact from driver where id=$1`
+      const result = await db.query(query,[id])
       
+      const contactNo = result.rows[0]
+  
+      console.log(contactNo.contact)
+      let otp=createOtp(contactNo.contact)
+      console.log(otp)
+      return otp
+    }
+
+    static async submitCredentials(credentials){
+      const requiredFields = ["id","userName","password"]
+      requiredFields.forEach((property) => {
+        if (!credentials.hasOwnProperty(property)) {
+          throw new BadRequestError(`Missing ${property} in request body.`)
+        }
+      })
+      const query = `insert into driver_auth (id,username,passwordhash) values ($1,$2,$3) RETURNING id`
+      const result = await db.query(query,[credentials.id,credentials.userName,credentials.password])
+
+      return result.rows[0]
     }
 
 }
