@@ -1,5 +1,5 @@
-const bcrypt = require("bcrypt")
 const { BCRYPT_WORK_FACTOR } = require("../config")
+const bcrypt = require("bcrypt");
 const {createOtp} =require("../utils/gateway")
 const db = require("../db")
 const { BadRequestError, UnauthorizedError } = require("../utils/errors")
@@ -53,9 +53,9 @@ class Driver{
   
         const contactNo = result2.rows[0]
   
-        console.log(contactNo.contact)
+        // console.log(contactNo.contact)
         let otp=createOtp(contactNo.contact)
-        console.log(otp)
+        // console.log(otp)
         return otp
       }else{
         return "taken"
@@ -82,11 +82,27 @@ class Driver{
           throw new BadRequestError(`Missing ${property} in request body.`)
         }
       })
-      const query = `insert into driver_auth (id,username,passwordhash) values ($1,$2,$3) RETURNING id`
-      const result = await db.query(query,[credentials.id,credentials.userName,credentials.password])
+      //get the hash value of the password
+      const salt = await bcrypt.genSalt(10);
+      const password = await bcrypt.hash(credentials.password, salt);
+      // console.log(password)
+      const query = `insert into driver_auth (id,username,passwordhash) values ($1,$2,$3) RETURNING username`
+      const result = await db.query(query,[credentials.id,credentials.userName,password])
 
-      return result.rows[0]
+      if (result.rows[0]!=undefined){
+        return "success"
+      }else{
+        return "failed"
+      }
     }
+    // static async login(credentials){
+    //   const validPassword = await bcrypt.compare(credentials.password, password);
+    //   if (validPassword) {
+    //     console.log("valid password")
+    //   } else {
+    //     console.log("invalid password")
+    //   }
+    // }
 
 }
 
