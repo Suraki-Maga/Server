@@ -2,7 +2,8 @@ const { BCRYPT_WORK_FACTOR } = require("../config")
 const bcrypt = require("bcrypt");
 const {createOtp} =require("../utils/gateway")
 const db = require("../db")
-const { BadRequestError, UnauthorizedError } = require("../utils/errors")
+const { BadRequestError, UnauthorizedError } = require("../utils/errors");
+const { query } = require("express");
 
 class Driver{
     static makeDriver(driver) {
@@ -90,19 +91,32 @@ class Driver{
       const result = await db.query(query,[credentials.id,credentials.userName,password])
 
       if (result.rows[0]!=undefined){
-        return "success"
+        return result.rows[0]
       }else{
         return "failed"
       }
     }
-    // static async login(credentials){
-    //   const validPassword = await bcrypt.compare(credentials.password, password);
-    //   if (validPassword) {
-    //     console.log("valid password")
-    //   } else {
-    //     console.log("invalid password")
-    //   }
-    // }
+    static async login(credentials){
+      const requiredFields = ["userName","password"]
+      requiredFields.forEach((property) => {
+        if (!credentials.hasOwnProperty(property)) {
+          throw new BadRequestError(`Missing ${property} in request body.`)
+        }
+      })
+      console.log(credentials.userName)
+      const query=`select password from driver_auth where username=$1`
+      const result=await db.query(query,credentials.userName)
+      password=result.rows[0]
+
+      const validPassword = await bcrypt.compare(credentials.password, password);
+      if (validPassword) {
+        console.log("valid password")
+        return credentials.userName
+      } else {
+        console.log("invalid password")
+        return "invalid"
+      }
+    }
 
 }
 
