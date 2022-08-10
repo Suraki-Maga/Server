@@ -49,13 +49,32 @@ router.get("/resendOtp",async(req,res,next)=>{
 })
 router.post("/submitCredentials",async(req,res,next)=>{
   try{
+    let respond;
     if(req.session.otp==req.body.otp){
-      const respond = await Driver.submitCredentials(req.body)
+      respond = await Driver.submitCredentials(req.body)
+      //close the session
+      req.session.destroy();
+      //create a jwt token
+      const token =createUserJwt(respond)
       console.log(respond)
+      return res.status(200).json({respond,token})
+      //plz handle failed condition. if else ekak athule danna.
     }else{
-      const respond="false"
+      respond="false"
+      return res.status(200).json({respond})
     }
-    return res.status(200).json({respond})
+    
+  }catch(err){
+    next(err)
+  }
+})
+
+router.post("/login",async(req,res,next)=>{
+  try{
+    // console.log(req.body)
+    const respond = await Driver.login(req.body)
+    const token=createUserJwt(respond)
+    return res.status(200).json({respond,token})
   }catch(err){
     next(err)
   }

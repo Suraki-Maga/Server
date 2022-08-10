@@ -21,11 +21,11 @@ app.use(express.json())
 // log requests info
 app.use(morgan("tiny"))
 
-const oneMin = 1000 * 60;
+const oneHour = 1000 * 60 * 60;
 app.use(sessions({
   secret: process.env.SECRET_KEY,
   saveUninitialized:true,
-  cookie: { maxAge: oneMin },
+  cookie: { maxAge: oneHour },
   resave: false
 }));
 

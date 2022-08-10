@@ -1,8 +1,9 @@
-const bcrypt = require("bcrypt")
 const { BCRYPT_WORK_FACTOR } = require("../config")
+const bcrypt = require("bcrypt");
 const {createOtp} =require("../utils/gateway")
 const db = require("../db")
-const { BadRequestError, UnauthorizedError } = require("../utils/errors")
+const { BadRequestError, UnauthorizedError } = require("../utils/errors");
+const { query } = require("express");
 
 class Driver{
     static makeDriver(driver) {
@@ -53,9 +54,9 @@ class Driver{
   
         const contactNo = result2.rows[0]
   
-        console.log(contactNo.contact)
+        // console.log(contactNo.contact)
         let otp=createOtp(contactNo.contact)
-        console.log(otp)
+        // console.log(otp)
         return otp
       }else{
         return "taken"
@@ -82,10 +83,39 @@ class Driver{
           throw new BadRequestError(`Missing ${property} in request body.`)
         }
       })
-      const query = `insert into driver_auth (id,username,passwordhash) values ($1,$2,$3) RETURNING id`
-      const result = await db.query(query,[credentials.id,credentials.userName,credentials.password])
+      //get the hash value of the password
+      const salt = await bcrypt.genSalt(10);
+      const password = await bcrypt.hash(credentials.password, salt);
+      // console.log(password)
+      const query = `insert into driver_auth (id,username,passwordhash) values ($1,$2,$3) RETURNING username`
+      const result = await db.query(query,[credentials.id,credentials.userName,password])
 
-      return result.rows[0]
+      if (result.rows[0]!=undefined){
+        return result.rows[0]
+      }else{
+        return "failed"
+      }
+    }
+    static async login(credentials){
+      const requiredFields = ["userName","password"]
+      requiredFields.forEach((property) => {
+        if (!credentials.hasOwnProperty(property)) {
+          throw new BadRequestError(`Missing ${property} in request body.`)
+        }
+      })
+      console.log(credentials.userName)
+      const query=`select password from driver_auth where username=$1`
+      const result=await db.query(query,credentials.userName)
+      password=result.rows[0]
+
+      const validPassword = await bcrypt.compare(credentials.password, password);
+      if (validPassword) {
+        console.log("valid password")
+        return credentials.userName
+      } else {
+        console.log("invalid password")
+        return "invalid"
+      }
     }
 
 }
