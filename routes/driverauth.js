@@ -73,14 +73,19 @@ router.post("/login",async(req,res,next)=>{
   try{
     // console.log(req.body)
     const respond = await Driver.login(req.body)
-    const token=createUserJwt(respond)
-    return res.status(200).json({respond,token})
+    console.log(respond)
+    if(respond!="invalid"){
+      const token=createUserJwt(respond)
+      return res.status(200).json({respond,token})
+    }else{
+      return res.status(200).json({respond})
+    }
+    
   }catch(err){
     next(err)
   }
 })
 
-// s
 // router.get("/me", security.requireAuthorizedUser, async (req, res, next) => {
 //   try {
 //     // const {username}=res.locals.user
