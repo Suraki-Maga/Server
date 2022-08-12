@@ -88,10 +88,14 @@ class Driver{
       const password = await bcrypt.hash(credentials.password, salt);
       // console.log(password)
       const query = `insert into driver_auth (id,username,passwordhash) values ($1,$2,$3) RETURNING username`
+      // const query = `Begin transaction;
+      //                 insert into driver_auth (id,username,passwordhash) values ($1,$2,$3) RETURNING username;
+      //                 delete from driver_verify where id=2;
+      //                 end transaction;`
       const result = await db.query(query,[credentials.id,credentials.userName,password])
 
       if (result.rows[0]!=undefined){
-        return result.rows[0]
+        return credentials.userName
       }else{
         return "failed"
       }
@@ -103,19 +107,25 @@ class Driver{
           throw new BadRequestError(`Missing ${property} in request body.`)
         }
       })
-      console.log(credentials.userName)
-      const query=`select password from driver_auth where username=$1`
-      const result=await db.query(query,credentials.userName)
-      password=result.rows[0]
-
-      const validPassword = await bcrypt.compare(credentials.password, password);
-      if (validPassword) {
-        console.log("valid password")
-        return credentials.userName
-      } else {
-        console.log("invalid password")
+      // console.log(credentials.userName)
+      const query=`select passwordhash from driver_auth where username=$1`
+      const result=await db.query(query,[credentials.userName])
+      if(result.rows[0]!=undefined){
+        const password=result.rows[0]
+        console.log(password)
+        const validPassword = await bcrypt.compare(credentials.password, password.passwordhash);
+        if (validPassword) {
+          // console.log("valid password")
+          return credentials.userName
+        } else {
+          // console.log("invalid password")
+          return "invalid"
+        }
+      }else{
+        // console.log("invalid username")
         return "invalid"
       }
+      
     }
 
 }
