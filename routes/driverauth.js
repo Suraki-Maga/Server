@@ -72,6 +72,7 @@ router.post("/submitCredentials",async(req,res,next)=>{
 router.post("/login",async(req,res,next)=>{
   try{
     // console.log(req.body)
+    console.log("arrived")
     const respond = await Driver.login(req.body)
     console.log(respond)
     if(respond!="invalid"){
@@ -86,15 +87,22 @@ router.post("/login",async(req,res,next)=>{
   }
 })
 
-// router.get("/me", security.requireAuthorizedUser, async (req, res, next) => {
-//   try {
-//     // const {username}=res.locals.user
-//     // const driver=await Driver.fetchUserByUserName(username)
-//     // const publicUser=Driver.makeDriver(driver)
-//     // return res.status(200).json({ publicUser })
-//   } catch (err) {
-//     next(err)
-//   }
-// })
+router.get("/details", security.requireAuthorizedUser, async (req, res, next) => {
+  try {
+
+    const username=res.locals.user.data
+    const driver=Driver.getDriver(username)
+    driver.then(function(result) {
+      console.log(result)
+      return res.status(200).json({ result })
+    })
+    
+    
+
+    
+  } catch (err) {
+    next(err)
+  }
+})
 
 module.exports = router
