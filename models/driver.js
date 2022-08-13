@@ -8,9 +8,10 @@ const { query } = require("express");
 class Driver{
     static makeDriver(driver) {
         return {
-          id: driver.id,
-          username: driver.username,
+          fullname: driver.fullname,
+          licenceno: driver.licenceno,
           contact: driver.contact,
+          nic: driver.nic
         }
     }
     
@@ -125,6 +126,15 @@ class Driver{
         // console.log("invalid username")
         return "invalid"
       }
+      
+    }
+
+    static async getDriver(userName){
+      console.log(userName)
+      const query=`Select driver.fullname,driver.licenceno,driver.contact,driver.nic from driver inner join driver_auth on driver.id=driver_auth.id where driver_auth.username=$1`
+      const result=await db.query(query,[userName])
+      // console.log(result.rows[0])
+      return result.rows[0]
       
     }
 

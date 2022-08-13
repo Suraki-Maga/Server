@@ -7,6 +7,7 @@ const jwtFrom=({headers})=>{
     if(headers?.authorization){
         const[scheme,token]=headers.authorization.split(" ")
         if(scheme.trim()==="Bearer"){
+            
             return token
         }
     }
@@ -29,7 +30,7 @@ const extractUserfromJwt=(req,res,next)=>{
 const requireAuthorizedUser=(req,res,next)=>{
     try{
         const {user} =res.locals
-        if(!user?.username){
+        if(!user.data){
             throw new UnauthorizedError()
         }
         return next()
