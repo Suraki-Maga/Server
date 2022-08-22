@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt")
 const { BCRYPT_WORK_FACTOR } = require("../config")
 const db = require("../db")
+const {createOtp} =require("../utils/gateway")
 const { BadRequestError, UnauthorizedError } = require("../utils/errors")
 const Driver = require("./driver")
 
@@ -8,22 +9,22 @@ class User extends Driver{
   static makePublicUser(user) {
     return {
       id: user.id,
-      email: user.email,
+      contact: user.contact,
       username: user.username,
-      isAdmin: user.is_admin,
-      createdAt: user.created_at,
+      type: user.type
     }
   }
 
+  //Function to login the user
   static async login(credentials) {
-    const requiredFields = ["email", "password"]
+    const requiredFields = ["username", "password"]
     requiredFields.forEach((property) => {
       if (!credentials.hasOwnProperty(property)) {
         throw new BadRequestError(`Missing ${property} in request body.`)
       }
     })
 
-    const user = await User.fetchUserByEmail(credentials.email)
+    const user = await User.fetchUserByUsername(credentials.username)
     if (user) {
       const isValid = await bcrypt.compare(credentials.password, user.password)
       if (isValid) {
@@ -34,57 +35,57 @@ class User extends Driver{
     throw new UnauthorizedError("Invalid username/password")
   }
 
+  //Function to register
   static async register(credentials) {
-    const requiredFields = ["email", "password", "username", "isAdmin"]
+    console.log(credentials)
+    const requiredFields = ["contact", "password", "username", "type"]
     requiredFields.forEach((property) => {
       if (!credentials.hasOwnProperty(property)) {
         throw new BadRequestError(`Missing ${property} in request body.`)
       }
     })
 
-    if (credentials.email.indexOf("@") <= 0) {
-      throw new BadRequestError("Invalid email.")
-    }
+  
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword= await bcrypt.hash(credentials.password, salt);
 
-    const existingUser = await User.fetchUserByEmail(credentials.email)
-    if (existingUser) {
-      throw new BadRequestError(`A user already exists with email: ${credentials.email}`)
-    }
-
-    const existingUserWithUsername = await User.fetchUserByUsername(credentials.username)
-    if (existingUserWithUsername) {
-      throw new BadRequestError(`A user already exists with username: ${credentials.username}`)
-    }
-
-    const hashedPassword = await bcrypt.hash(credentials.password, BCRYPT_WORK_FACTOR)
-    const normalizedEmail = credentials.email.toLowerCase()
 
     const userResult = await db.query(
-      `INSERT INTO users (email, password, username, is_admin)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, email, username, is_admin, created_at;
+      `INSERT INTO users (contact, username, type)
+       VALUES ($1, $2, $3)
+       RETURNING id;
       `,
-      [normalizedEmail, hashedPassword, credentials.username, credentials.isAdmin]
+      [credentials.contact, credentials.username, credentials.type]
     )
     const user = userResult.rows[0]
 
-    return User.makePublicUser(user)
+    const userResult1 = await db.query(
+      `INSERT INTO user_auth (id,password)
+       VALUES ($1,$2)
+      `,
+      [user.id,hashedPassword]
+    )
+
+    return user.id
   }
 
-  static async fetchUserByEmail(email) {
-    if (!email) {
-      throw new BadRequestError("No email provided")
+
+  //Function to check whether another user has the same contact
+  static async fetchUserByContact(contact) {
+    if (!contact) {
+      throw new BadRequestError("No contact provided")
     }
 
-    const query = `SELECT * FROM users WHERE email = $1`
+    const query = `SELECT * FROM users WHERE contact = $1`
 
-    const result = await db.query(query, [email.toLowerCase()])
+    const result = await db.query(query, [contact])
 
     const user = result.rows[0]
 
     return user
   }
 
+  //Function to check whether another user has the same username
   static async fetchUserByUsername(username) {
     if (!username) {
       throw new BadRequestError("No username provided")
@@ -97,6 +98,37 @@ class User extends Driver{
     const user = result.rows[0]
 
     return user
+  }
+
+  //Function to sendOtp
+  static async sendOtp(credentials){
+    const requiredFields = ["username","contact"]
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`)
+      }
+    })
+
+    const existingUser = await User.fetchUserByContact(credentials.contact)
+    if (existingUser) {
+      throw new BadRequestError(`A user already exists with same contact number: ${credentials.contact}`)
+    }
+
+    const existingUserWithUsername = await User.fetchUserByUsername(credentials.username)
+    if (existingUserWithUsername) {
+      throw new BadRequestError(`A user already exists with username: ${credentials.username}`)
+    }
+
+
+    // console.log(contactNo.contact)
+      let otp=createOtp(credentials.contact)
+    if(otp){
+      return otp
+    }
+    else {
+      throw new BadRequestError(`Cannot send an OTP. Try again in few minutes`)
+    }
+    
   }
 }
 
