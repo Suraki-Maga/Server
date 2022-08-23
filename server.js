@@ -8,6 +8,7 @@ const security=require("./middleware/security")
 // var cookieParser = require('cookie-parser');
 const authRoutes = require("./routes/auth")
 const driverRoutes = require("./routes/driverauth")
+const ownerRoutes = require("./routes/owner")
 const sessions = require('express-session');
 
 const app = express()
@@ -38,6 +39,8 @@ app.use(security.extractUserfromJwt)
 app.use("/auth", authRoutes) 
 
 app.use("/driverauth", driverRoutes) 
+
+app.use("/owner", ownerRoutes)
 
 /** Handle 404 errors -- this matches everything */
 app.use((req, res, next) => {
