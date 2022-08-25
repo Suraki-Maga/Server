@@ -37,7 +37,7 @@ class User extends Driver{
 
   //Function to register
   static async register(credentials) {
-    console.log(credentials)
+    // console.log(credentials)
     const requiredFields = ["contact", "password", "username", "type"]
     requiredFields.forEach((property) => {
       if (!credentials.hasOwnProperty(property)) {
@@ -53,7 +53,7 @@ class User extends Driver{
     const userResult = await db.query(
       `INSERT INTO users (contact, username, type)
        VALUES ($1, $2, $3)
-       RETURNING id;
+       RETURNING id,username;
       `,
       [credentials.contact, credentials.username, credentials.type]
     )
@@ -66,7 +66,7 @@ class User extends Driver{
       [user.id,hashedPassword]
     )
 
-    return user.id
+    return user
   }
 
 
@@ -91,7 +91,7 @@ class User extends Driver{
       throw new BadRequestError("No username provided")
     }
 
-    const query = `SELECT * FROM users WHERE username = $1`
+    const query = `SELECT * FROM users INNER JOIN user_auth ON users.id=user_auth.id WHERE users.username = $1`
 
     const result = await db.query(query, [username])
 
@@ -129,6 +129,22 @@ class User extends Driver{
       throw new BadRequestError(`Cannot send an OTP. Try again in few minutes`)
     }
     
+  }
+
+
+  //Function to retrive usertype
+  static async fetchUsertype(username) {
+    if (!username) {
+      throw new BadRequestError("No username provided")
+    }
+
+    const query = `SELECT username, contact, type FROM users WHERE username = $1`
+
+    const result = await db.query(query, [username])
+
+    const user = result.rows[0]
+
+    return user
   }
 }
 
