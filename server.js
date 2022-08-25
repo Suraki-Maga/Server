@@ -8,10 +8,11 @@ const security=require("./middleware/security")
 var cookieParser = require('cookie-parser');
 const authRoutes = require("./routes/auth")
 const driverRoutes = require("./routes/driverauth")
+const userRoutes = require ("./routes/usertype")
 const sessions = require('express-session');
 
 const app = express()
-app.use(cookieParser());
+// app.use(cookieParser());
 
 // enable cross-origin resource sharing for all origins for all requests
 // NOTE: in production, we'll want to restrict this to only the origin
@@ -38,6 +39,8 @@ app.use(security.extractUserfromJwt)
 app.use("/auth", authRoutes) 
 
 app.use("/driverauth", driverRoutes) 
+
+// app.use("/user",userRoutes)
 
 /** Handle 404 errors -- this matches everything */
 app.use((req, res, next) => {
