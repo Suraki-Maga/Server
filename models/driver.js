@@ -134,10 +134,26 @@ class Driver {
 
   static async getDriver(userName) {
     console.log(userName);
-    const query = `Select driver.fullname,driver.licenceno,driver.contact,driver.nic from driver inner join driver_auth on driver.id=driver_auth.id where driver_auth.username=$1`;
+    const query = `Select driver.fullname,driver.licenceno,driver.contact,driver.nic,driver.image from driver inner join driver_auth on driver.id=driver_auth.id where driver_auth.username=$1`;
     const result = await db.query(query, [userName]);
     // console.log(result.rows[0])
     return result.rows[0];
+  }
+  static async changeProfilePicture(username, credentials) {
+    const requiredFields = ["profilePic"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query1 = `Select id from driver_auth where username=$1`;
+    const result1 = await db.query(query1, [username]);
+    const query2 = "update driver set image=$1 where id=$2";
+    const result2 = await db.query(query2, [
+      credentials.profilePic,
+      result1.rows[0].id,
+    ]);
+    return "done";
   }
 }
 
