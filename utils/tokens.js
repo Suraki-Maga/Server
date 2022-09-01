@@ -7,7 +7,7 @@ const createUserJwt=(user)=>{
     const payload={
         data:user,
     }
-    console.log(payload)
+
     return generateToken(payload)
 }
 const validateToken=(token)=>{
