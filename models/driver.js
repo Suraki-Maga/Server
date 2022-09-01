@@ -155,6 +155,47 @@ class Driver {
     ]);
     return "done";
   }
+  static async checkCurrentPassword(username, credentials) {
+    const requiredFields = ["currentPassword"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select passwordhash from driver_auth where username=$1`;
+    const result = await db.query(query, [username]);
+    if (result.rows[0] != undefined) {
+      const password = result.rows[0];
+      const validPassword = await bcrypt.compare(
+        credentials.currentPassword,
+        password.passwordhash
+      );
+      if (validPassword) {
+        // console.log("valid password")
+        return "valid";
+      } else {
+        // console.log("invalid password")
+        return "invalid";
+      }
+    } else {
+      // console.log("invalid username")
+      return "invalid";
+    }
+  }
+  static async setNewPassword(username, credentials) {
+    const requiredFields = ["newPassword"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const salt = await bcrypt.genSalt(10);
+    const password = await bcrypt.hash(credentials.newPassword, salt);
+    const query = `update driver_auth set passwordhash=$1 where username=$2`;
+
+    const result = await db.query(query, [password, username]);
+    return "done";
+  }
 }
 
 module.exports = Driver;
