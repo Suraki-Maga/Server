@@ -8,7 +8,7 @@ router.get("/getownerdetails", async (req, res, next) => {
     try {
       // console.log("Dilshi")
       // const username=res.locals.user.data
-      const username = "roshan"
+      const username = "Roshan"
       const owner=Owner.getOwner(username)
       owner.then(function(result) {
         console.log(result)
