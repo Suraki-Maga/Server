@@ -155,4 +155,39 @@ router.post(
   }
 );
 
+router.post(
+  "/checkCurrentPassword",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const username = res.locals.user.data;
+      console.log(username);
+      console.log(req.body);
+      const respond = Driver.checkCurrentPassword(username, req.body);
+      respond.then(function (result) {
+        return res.status(200).json({ result });
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  "/setNewPassword",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const username = res.locals.user.data;
+      console.log(username);
+      console.log(req.body);
+      const respond = Driver.setNewPassword(username, req.body);
+      respond.then(function (result) {
+        return res.status(200).json({ result });
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 module.exports = router;
