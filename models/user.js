@@ -28,11 +28,16 @@ class User extends Driver{
     if (user) {
       const isValid = await bcrypt.compare(credentials.password, user.password)
       if (isValid) {
-        return User.makePublicUser(user)
+        return credentials.username;
+      }
+      else{
+        return "invalid";
       }
     }
 
-    throw new UnauthorizedError("Invalid username/password")
+    else{
+      return "invalid";
+    }
   }
 
   //Function to register
@@ -53,7 +58,7 @@ class User extends Driver{
     const userResult = await db.query(
       `INSERT INTO users (contact, username, type)
        VALUES ($1, $2, $3)
-       RETURNING id,username;
+       RETURNING id;
       `,
       [credentials.contact, credentials.username, credentials.type]
     )
@@ -144,7 +149,7 @@ class User extends Driver{
 
     const user = result.rows[0]
 
-    return user
+    return user.type
   }
 }
 

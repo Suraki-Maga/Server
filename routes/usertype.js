@@ -7,6 +7,7 @@ const { createUserJwt } = require("../utils/tokens")
 router.post("/", async (req, res) => {
     try {
       const userid = req.body.username;
+      console.log(userid);
       const newUser = User.fetchUsertype(userid)
       res.json(newUser.rows[0]);
       return;
