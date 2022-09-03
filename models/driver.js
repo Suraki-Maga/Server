@@ -182,7 +182,7 @@ class Driver {
       return "invalid";
     }
   }
-  static async setNewPassword(username, credentials) {
+  static async setNewPassword(credentials) {
     const requiredFields = ["newPassword"];
     requiredFields.forEach((property) => {
       if (!credentials.hasOwnProperty(property)) {
@@ -194,6 +194,29 @@ class Driver {
     const query = `update driver_auth set passwordhash=$1 where username=$2`;
 
     const result = await db.query(query, [password, username]);
+    return "done";
+  }
+  static async getOtp(credentials) {
+    const requiredFields = ["mobileNo"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    let otp = createOtp(credentials.mobileNo);
+    return otp;
+  }
+  static async changeContact(username, credentials) {
+    const requiredFields = ["mobileNo"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    let query = `select id from driver_auth where username=$1`;
+    const result = await db.query(query, [username]);
+    query = `update driver set contact=$1 where id=$2`;
+    await db.query(query, [credentials.mobileNo, result.rows[0].id]);
     return "done";
   }
 }

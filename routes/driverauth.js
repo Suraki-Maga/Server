@@ -183,8 +183,63 @@ router.post(
       console.log(req.body);
       const respond = Driver.setNewPassword(username, req.body);
       respond.then(function (result) {
+        console.log(result);
         return res.status(200).json({ result });
       });
+      // respond
+      //   .then((data) => data)
+      //   .then((value) => {
+      //     console.log(value);
+      //     return res.status(200).json({ value });
+      //   });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+router.post(
+  "/getOtpForNewNo",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const username = res.locals.user.data;
+      // console.log(username);
+      // console.log(req.body);
+      const respond = Driver.getOtp(req.body);
+      respond.then(function (result) {
+        req.session.userName = username;
+        req.session.otp = result;
+        console.log(req.session.userName);
+        console.log(req.session.otp);
+        return res.status(200).json({ result: "OTP sent" });
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+router.post(
+  "/submitContact",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const username = res.locals.user.data;
+      console.log(username);
+      console.log(req.body);
+      console.log(req.session);
+      if (req.session.userName == username) {
+        if (req.session.otp == req.body.otp) {
+          const respond = Driver.changeContact(username, req.body);
+          req.session.destroy();
+
+          respond.then(function (result) {
+            console.log(result);
+            return res.status(200).json({ result });
+          });
+        } else {
+          return res.status(200).json({ result: "failed" });
+        }
+      }
     } catch (err) {
       next(err);
     }
