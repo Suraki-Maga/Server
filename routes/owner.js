@@ -62,6 +62,16 @@ router.get("/getownerdetails", async (req, res, next) => {
     }
   })
 
+  router.post("/loadDriverDetails",async(req,res,next)=>{
+    try{
+      console.log(req.body)
+      const respond = Owner.loadDriverDetails(req.body)
+      return res.status(200).json({respond})
+    } catch(err){
+      next(err)
+    }
+  })
+
   router.post("/removeDriver",async(req,res,next)=>{
     try{
       console.log(req.body)

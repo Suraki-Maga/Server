@@ -8,7 +8,14 @@ router.post("/login", async (req, res, next) => {
   try {
     const user = await User.login(req.body)
     console.log(user)
-    return res.status(200).json({ user,status:true })
+    if(user=="invalid"){
+      return res.status(200).json({status:false })
+    }
+    else{
+    const token = createUserJwt(user)
+    console.log(token)
+    return res.status(200).json({ token,status:true })
+    }
   } catch (err) {
     next(err)
   }
@@ -69,5 +76,20 @@ router.post("/sendOtp",async(req,res,next)=>{
     next(err)
   }
 })
+
+router.get("/isverify", security.requireAuthorizedUser, async (req, res) => {
+  // console.log("Faa"+res.locals.user.data)
+  try {
+    const username=res.locals.user.data
+    const user=User.fetchUsertype(username);
+    user.then(function(result) {
+      console.log(result)
+      return res.status(200).json( {result,status:true} )
+    })
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
 
 module.exports = router
