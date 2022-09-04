@@ -9,10 +9,10 @@ const security=require("./middleware/security")
 const authRoutes = require("./routes/auth")
 const driverRoutes = require("./routes/driverauth")
 
-const userRoutes = require ("./routes/usertype")
+const userRoutes = require ("./routes/user")
 
 const ownerRoutes = require("./routes/owner")
-// const parentRoutes = require ("./routes/parent")
+const parentRoutes = require ("./routes/parent")
 
 const sessions = require('express-session');
 
@@ -46,11 +46,11 @@ app.use("/auth", authRoutes)
 app.use("/driverauth", driverRoutes) 
 
 
-// app.use("/user",userRoutes)
+app.use("/user",userRoutes)
 
 app.use("/owner", ownerRoutes)
 
-// app.use("/parent", parentRoutes)
+app.use("/parent", parentRoutes)
 
 
 /** Handle 404 errors -- this matches everything */
