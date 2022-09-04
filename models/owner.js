@@ -1,5 +1,3 @@
-const bcrypt = require("bcrypt")
-const { BCRYPT_WORK_FACTOR } = require("../config")
 const db = require("../db")
 const { BadRequestError, UnauthorizedError } = require("../utils/errors")
 
@@ -15,11 +13,10 @@ class Owner {
     }
 
     static async registerDriver(credentials){
-        const user = "dil"
-        const query = `INSERT INTO driver(fullname,licenceno,contact,nic,image,username)
+        const query = `INSERT INTO driver(fullname,licenceno,contact,nic,image)
                         VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`
 
-        const result = await db.query(query,[credentials.name,credentials.licenseno,credentials.mobile,credentials.nic,credentials.url,user])
+        const result = await db.query(query,[credentials.name,credentials.licenseno,credentials.mobile,credentials.nic,credentials.url])
     }
 
     static async EditOwnerProfile(credentials){
@@ -48,6 +45,13 @@ class Owner {
     static async removeDriver(credentials){
         const query = `DELETE FROM driver WHERE id=$1`
         db.query(query,[credentials.id])
+    }
+    
+    static async loadDriverDetails(credentials){
+        const query = `select id,fullname,licenceno,contact,nic,image from driver where driver.id=$1`
+        const result=await db.query(query,[credentials.id])
+        console.log(result.rows[0])
+        return result.rows[0]
     }
 }
 
