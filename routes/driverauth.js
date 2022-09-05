@@ -1,6 +1,7 @@
 const express = require("express");
 const Driver = require("../models/driver");
 const Map = require("../models/map");
+const SchoolVan = require("../models/schoolvan");
 // const User =require("../models/user")
 const router = express.Router();
 const { createUserJwt } = require("../utils/tokens");
@@ -107,9 +108,9 @@ router.get(
     try {
       const username = res.locals.user.data;
       console.log(username);
-      const vanId = Map.loadStudentLocations(username);
+      const respond = Map.loadStudentLocations(username);
 
-      vanId.then(function (result) {
+      respond.then(function (result) {
         return res.status(200).json({ result });
       });
     } catch (err) {
@@ -183,6 +184,78 @@ router.post(
       console.log(req.body);
       const respond = Driver.setNewPassword(username, req.body);
       respond.then(function (result) {
+        console.log(result);
+        return res.status(200).json({ result });
+      });
+      // respond
+      //   .then((data) => data)
+      //   .then((value) => {
+      //     console.log(value);
+      //     return res.status(200).json({ value });
+      //   });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+router.post(
+  "/getOtpForNewNo",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const username = res.locals.user.data;
+      // console.log(username);
+      // console.log(req.body);
+      const respond = Driver.getOtp(req.body);
+      respond.then(function (result) {
+        req.session.userName = username;
+        req.session.otp = result;
+        console.log(req.session.userName);
+        console.log(req.session.otp);
+        return res.status(200).json({ result: "OTP sent" });
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+router.post(
+  "/submitContact",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const username = res.locals.user.data;
+      console.log(username);
+      console.log(req.body);
+      console.log(req.session);
+      if (req.session.userName == username) {
+        if (req.session.otp == req.body.otp) {
+          const respond = Driver.changeContact(username, req.body);
+          req.session.destroy();
+
+          respond.then(function (result) {
+            console.log(result);
+            return res.status(200).json({ result });
+          });
+        } else {
+          return res.status(200).json({ result: "failed" });
+        }
+      }
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  "/loadVehicleInformation",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const username = res.locals.user.data;
+      const respond = SchoolVan.loadDetails(username);
+      respond.then(function (result) {
+        console.log(result);
         return res.status(200).json({ result });
       });
     } catch (err) {
