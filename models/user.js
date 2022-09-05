@@ -148,8 +148,21 @@ class User extends Driver{
     const result = await db.query(query, [username])
 
     const user = result.rows[0]
+    console.log(user)
 
     return user.type
+  }
+
+  //Function to retrieve all schools
+  static async getSchools() {
+   
+
+   const query = `SELECT name, id from school`
+
+  const school = await db.query(query)
+
+
+    return school.rows
   }
 }
 
