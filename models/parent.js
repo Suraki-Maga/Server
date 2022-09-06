@@ -11,8 +11,13 @@ class Parent {
     
         const query = `Select student.id,student.fullname,student.school,AGE(CURRENT_DATE, student.birthday) from student inner join users on student.parentid=users.id where users.username=$1`
         const children=await db.query(query,[userName])
-        // console.log(result.rows[0])
+        
+        if(children.rows){
         return children.rows
+        }
+        else {
+            return "false";
+        }
     }
 }
 

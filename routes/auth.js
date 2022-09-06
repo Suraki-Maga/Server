@@ -46,8 +46,7 @@ router.post("/login", async (req, res, next) => {
 
 router.post("/register", async (req, res, next) => {
   try {
-    
-   
+    console.log(req.body);
     respond = await User.register(req.body)
     console.log(respond)
    
