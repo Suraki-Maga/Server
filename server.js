@@ -11,7 +11,7 @@ const driverRoutes = require("./routes/driverauth")
 
 const userRoutes = require ("./routes/user")
 
-const ownerRoutes = require("./routes/owner")
+const ownerRoutes = require("./routes/ownerauth")
 const parentRoutes = require ("./routes/parent")
 
 const sessions = require('express-session');
@@ -48,7 +48,7 @@ app.use("/driverauth", driverRoutes)
 
 app.use("/user",userRoutes)
 
-app.use("/owner", ownerRoutes)
+app.use("/ownerauth", ownerRoutes)
 
 app.use("/parent", parentRoutes)
 

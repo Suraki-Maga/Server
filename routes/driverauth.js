@@ -1,6 +1,7 @@
 const express = require("express");
 const Driver = require("../models/driver");
 const Map = require("../models/map");
+const SchoolVan = require("../models/schoolvan");
 // const User =require("../models/user")
 const router = express.Router();
 const { createUserJwt } = require("../utils/tokens");
@@ -107,9 +108,9 @@ router.get(
     try {
       const username = res.locals.user.data;
       console.log(username);
-      const vanId = Map.loadStudentLocations(username);
+      const respond = Map.loadStudentLocations(username);
 
-      vanId.then(function (result) {
+      respond.then(function (result) {
         return res.status(200).json({ result });
       });
     } catch (err) {
@@ -240,6 +241,23 @@ router.post(
           return res.status(200).json({ result: "failed" });
         }
       }
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  "/loadVehicleInformation",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const username = res.locals.user.data;
+      const respond = SchoolVan.loadDetails(username);
+      respond.then(function (result) {
+        console.log(result);
+        return res.status(200).json({ result });
+      });
     } catch (err) {
       next(err);
     }
