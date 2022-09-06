@@ -169,16 +169,17 @@ class User extends Driver{
 
 
 //Function to retrieve all schools
-static async getSchoolAdverstimsent() {
+static async getSchoolAdvertisement() {
    
 
-  const query = `SELECT name, id from school`
+const query = `SELECT schoolvan.id, schoolvan.vehicleno, schoolvan.vehicletype, schoolvan.seats, schoolvan.charge,
+schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage from schoolvan`
 
- const school = await db.query(query)
+const school = await db.query(query)
+console.log(school.rows)
 
-
-   return school.rows
- }
+return school.rows
+}
 }
 
 module.exports = User
