@@ -263,4 +263,22 @@ router.get(
     }
   }
 );
+
+router.get(
+  "/loadVehicleImages",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const userName = res.locals.user.data;
+      console.log(userName);
+      const respond = SchoolVan.loadVehicleImages(userName);
+      respond.then(function (result) {
+        console.log(result);
+        return res.status(200).json({ result });
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 module.exports = router;

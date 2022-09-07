@@ -21,5 +21,20 @@ class SchoolVan {
 
     // return result.rows[0];
   }
+  static async loadVehicleImages(username) {
+    let query = `select id from driver_auth where username=$1`;
+    let result = await db.query(query, [username]);
+    query = `select schoolvanimages.image from schoolvanimages inner join schoolvan on schoolvan.id=schoolvanimages.sclvanid
+    where schoolvan.driverid=$1`;
+    result = await db.query(query, [result.rows[0].id]);
+
+    if (result.rows[0] != undefined) {
+      return result.rows;
+    } else {
+      return "unavailable";
+    }
+
+    return result.rows;
+  }
 }
 module.exports = SchoolVan;
