@@ -17,5 +17,17 @@ router.get("/children", security.requireAuthorizedUser, async (req, res) => {
       res.status(500).send("Server Error");
     }
   });
+
+  router.post("/addchild",security.requireAuthorizedUser, async(req, res, next)=>{
+    try{
+      const username = res.locals.user.data;
+      const respond = Parent.addChild(username,req.body)
+      respond.then(function(result){
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
   
   module.exports = router
