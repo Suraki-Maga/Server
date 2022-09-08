@@ -17,6 +17,19 @@ router.get("/school", security.requireAuthorizedUser, async (req, res) => {
   }
 });
 
+router.get("/schoolvanadvertisement", security.requireAuthorizedUser, async (req, res) => {
+  try {
+    const schools=User.getSchoolAdvertisement();
+    schools.then(function(result) {
+      console.log(result)
+      return res.status(200).json( {result} )
+    })
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 
 
 module.exports = router

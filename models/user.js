@@ -64,6 +64,8 @@ class User extends Driver{
     )
     const user = userResult.rows[0]
 
+    console.log(user);
+
     const userResult1 = await db.query(
       `INSERT INTO user_auth (id,password)
        VALUES ($1,$2)
@@ -164,6 +166,20 @@ class User extends Driver{
 
     return school.rows
   }
+
+
+//Function to retrieve all schools
+static async getSchoolAdvertisement() {
+   
+
+const query = `SELECT schoolvan.id, schoolvan.vehicleno, schoolvan.vehicletype, schoolvan.seats, schoolvan.charge,
+schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage from schoolvan`
+
+const school = await db.query(query)
+console.log(school.rows)
+
+return school.rows
+}
 }
 
 module.exports = User
