@@ -36,5 +36,54 @@ class SchoolVan {
 
     return result.rows;
   }
+  static async getCurrentAvailability(username) {
+    let query = `select id from driver_auth where username=$1`;
+    let result = await db.query(query, [username]);
+    query = `select avail from driver where id=$1`;
+    result = await db.query(query, [result.rows[0].id]);
+    console.log(result.rows[0]);
+    return result.rows[0];
+  }
+  static async setAvailability(username, credentials) {
+    const requiredFields = ["status"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    let query = `select id from driver_auth where username=$1`;
+    let result = await db.query(query, [username]);
+
+    if (credentials.status == "available") {
+      query = `update driver set avail=$1 where id=$2`;
+      result = await db.query(query, [1, result.rows[0].id]);
+    } else {
+      db.query("BEGIN")
+        .then((res) => {
+          db.query(`update driver set avail=$1 where id=$2`, [
+            0,
+            result.rows[0].id,
+          ]);
+        })
+        .then((res) => {
+          db.query(`update schoolvan set driverid = null where driverid=$1`, [
+            result.rows[0].id,
+          ]);
+        })
+        .then((res) => {
+          db.query(`COMMIT`);
+        })
+        .then((res) => {
+          console.log("Transaction completed");
+        })
+        .catch((err) => {
+          console.error("error while querying:", err);
+          return client.query("rollback");
+        })
+        .catch((err) => {
+          console.error("error while rolling back transaction:", err);
+        });
+    }
+  }
 }
 module.exports = SchoolVan;
