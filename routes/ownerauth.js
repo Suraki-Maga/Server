@@ -107,4 +107,56 @@ router.get("/getownerdetails",security.requireAuthorizedUser, async (req, res, n
     }
   })
 
+  router.post("/isuniquevehicleno",security.requireAuthorizedUser, async(req, res, next)=>{
+    try{
+      console.log(req.body)
+      const respond = Owner.isuniquevehicleno(req.body)
+      respond.then(function(result){
+        console.log(result)
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+
+  router.get("/getschoolvandetails",security.requireAuthorizedUser,async(req, res, next)=>{
+    try{
+      const username = res.locals.user.data;
+      console.log(username)
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getschoolvandetails(ownerid.id)
+      respond.then(function(result) {
+        console.log(result)
+        return res.status(200).json({ result })
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+
+  router.post("/addSchoolstoSchoolvan",security.requireAuthorizedUser,async(req, res, next)=>{
+    try{
+      const respond = Owner.addSchoolstoSchoolvan(req.body)
+      respond.then(function(result) {
+        console.log(result)
+        return res.status(200).json({ result })
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+
+  router.get("/getschoolsSchoolvan",security.requireAuthorizedUser,async(req, res, next)=>{
+    try{
+      const respond = Owner.getschoolsSchoolvan()
+      respond.then(function(result) {
+        console.log(result)
+        return res.status(200).json({ result })
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+
 module.exports = router
