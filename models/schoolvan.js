@@ -49,5 +49,24 @@ class SchoolVan {
       return "empty";
     }
   }
+  static async getStudents(username, credentials) {
+    const requiredFields = ["state"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    if (credentials.state == "morning") {
+      let query = `select student.fullname,student.image from ((student inner join schoolvan on student.vanid=schoolvan.id) inner join driver_auth on driver_auth.id=schoolvan.driverid) 
+      where driver_auth.username=$1 and student.morning_state=true`;
+      let result = await db.query(query, [username]);
+      return result.rows;
+    } else if (credentials.state == "evening") {
+      let query = `select * from ((student inner join schoolvan on student.vanid=schoolvan.id) inner join driver_auth on driver_auth.id=schoolvan.driverid) 
+      where driver_auth.username=$1 and student.evening_state=true`;
+      let result = await db.query(query, [username]);
+      return result.rows;
+    }
+  }
 }
 module.exports = SchoolVan;

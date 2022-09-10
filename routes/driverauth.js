@@ -347,5 +347,20 @@ router.get(
     }
   }
 );
+router.post(
+  "/getStudentList",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const userName = res.locals.user.data;
+      const respond = SchoolVan.getStudents(userName, req.body);
+      respond.then(function (result) {
+        return res.status(200).json({ result });
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 module.exports = router;
