@@ -20,7 +20,7 @@ class Parent {
     //Function to get children names
     static async getChildren(userName) {
     
-        const query = `Select student.id,student.fullname,student.school,AGE(CURRENT_DATE, student.birthday) from student inner join users on student.parentid=users.id where users.username=$1`
+        const query = `Select student.id,student.fullname,student.school,AGE(CURRENT_DATE, student.birthday),student.image,student.vanid from student inner join users on student.parentid=users.id where users.username=$1`
         const children=await db.query(query,[userName])
         
         if(children.rows){
@@ -52,6 +52,20 @@ class Parent {
         }
         else {
             return false
+        }
+    }
+
+      //Function to get children names with the monthly charges
+      static async getChildrenCharges(userName) {
+    
+        const query = `Select student.id,student.fullname,student.school,AGE(CURRENT_DATE, student.birthday),student.image,student.vanid from student inner join users on student.parentid=users.id where users.username=$1`
+        const children=await db.query(query,[userName])
+        
+        if(children.rows){
+        return children.rows
+        }
+        else {
+            return "false";
         }
     }
 }
