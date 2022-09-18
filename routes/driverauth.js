@@ -281,4 +281,86 @@ router.get(
     }
   }
 );
+router.get(
+  "/getCurrentAvailability",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const userName = res.locals.user.data;
+      console.log(userName);
+      const respond = Driver.getCurrentAvailability(userName);
+      respond.then(function (result) {
+        console.log(result);
+        return res.status(200).json({ result });
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+router.post(
+  "/setAvailability",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const userName = res.locals.user.data;
+      console.log(userName);
+      const respond = Driver.setAvailability(userName, req.body);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  "/isAssigned",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const userName = res.locals.user.data;
+      console.log(userName);
+      const respond = Driver.isAssigned(userName);
+      respond.then(function (result) {
+        console.log(result);
+        return res.status(200).json({ result });
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  "/getDestination",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const userName = res.locals.user.data;
+      console.log(userName);
+      const respond = SchoolVan.getDestination(userName);
+      respond.then(function (result) {
+        console.log(result);
+        return res.status(200).json({ result });
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+router.post(
+  "/getStudentList",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const userName = res.locals.user.data;
+      const respond = SchoolVan.getStudents(userName, req.body);
+      respond.then(function (result) {
+        return res.status(200).json({ result });
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 module.exports = router;

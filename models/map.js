@@ -12,11 +12,15 @@ class Map {
     query = "select id from schoolvan where driverid=$1";
     result = await db.query(query, [result.rows[0].id]);
     //DON'T LOAD ABSENT STUDENTS
-    let vanId = result.rows[0].id;
-    query = `select * from student_location inner join student on student.id=student_location.id where student.vanid=$1`;
-    result = await db.query(query, [vanId]);
-    console.log(result.rows);
-    return result.rows;
+    if (result.rows[0] != undefined) {
+      let vanId = result.rows[0].id;
+      query = `select * from student_location inner join student on student.id=student_location.id where student.vanid=$1`;
+      result = await db.query(query, [vanId]);
+      console.log(result.rows);
+      return result.rows;
+    } else {
+      return "failed";
+    }
   }
 
   static async loadStudentDetails(credentials) {

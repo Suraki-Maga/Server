@@ -168,17 +168,31 @@ class User extends Driver{
   }
 
 
-//Function to retrieve all schools
+//Function to retrieve all advertisment of schools
 static async getSchoolAdvertisement() {
    
 
 const query = `SELECT schoolvan.id, schoolvan.vehicleno, schoolvan.vehicletype, schoolvan.seats, schoolvan.charge,
-schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage from schoolvan`
+schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage,schoolvan.backimage from schoolvan`
 
 const school = await db.query(query)
 // console.log(school.rows)
 
 return school.rows
+}
+
+//Function to retreive destination schools of vans
+static async getDestinationSchools(vanid) {
+  
+  const query = `select school.name from ((school inner join schoolvanschools on schoolvanschools.sclid=school.id)
+  inner join schoolvan on schoolvan.id=schoolvanschools.sclvanid) where schoolvan.vanid=$1`;
+
+  const result = await db.query(query, [vanid]);
+  if (result.rows[0] !== undefined) {
+    return result.rows;
+  } else {
+    return "empty";
+  }
 }
 }
 

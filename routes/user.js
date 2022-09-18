@@ -30,6 +30,19 @@ router.get("/schoolvanadvertisement", security.requireAuthorizedUser, async (req
   }
 });
 
+router.get("/destinationschools", security.requireAuthorizedUser, async (req, res) => {
+  try {
+    const destinationschools=User.getDestinationSchools(req.body);
+    destinationschools.then(function(result) {
+      console.log(result)
+      return res.status(200).json( {result} )
+    })
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 
 
 module.exports = router
