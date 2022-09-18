@@ -176,7 +176,7 @@ const query = `SELECT schoolvan.id, schoolvan.vehicleno, schoolvan.vehicletype, 
 schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage from schoolvan`
 
 const school = await db.query(query)
-console.log(school.rows)
+// console.log(school.rows)
 
 return school.rows
 }

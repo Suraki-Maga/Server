@@ -8,7 +8,7 @@ router.get("/school", security.requireAuthorizedUser, async (req, res) => {
   try {
     const schools=User.getSchools();
     schools.then(function(result) {
-      console.log(result)
+      // console.log(result)
       return res.status(200).json( {result} )
     })
   } catch (error) {
