@@ -173,7 +173,7 @@ static async getSchoolAdvertisement() {
    
 
 const query = `SELECT schoolvan.id, schoolvan.vehicleno, schoolvan.vehicletype, schoolvan.seats, schoolvan.charge,
-schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage,schoolvan.backimage from schoolvan`
+schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage,schoolvan.backimage,owner.name as ownername,owner.contact as ownercontact,driver.fullname as drivername,driver.contact as drivercontact from schoolvan INNER JOIN owner on owner.id=schoolvan.ownerid INNER join driver on driver.id=schoolvan.driverid`
 
 const school = await db.query(query)
 console.log(school.rows)
@@ -182,12 +182,12 @@ return school.rows
 }
 
 //Function to retreive destination schools of vans
-static async getDestinationSchools(vanid) {
+static async getDestinationSchools(credentials) {
   
-  const query = `select school.name from ((school inner join schoolvanschools on schoolvanschools.sclid=school.id)
-  inner join schoolvan on schoolvan.id=schoolvanschools.sclvanid) where schoolvan.vanid=$1`;
+  const query = `select school.name,school.latitude,school.longtitude from ((school inner join schoolvanschools on schoolvanschools.sclid=school.id)
+  inner join schoolvan on schoolvan.id=schoolvanschools.sclvanid) where schoolvan.id=$1`;
 
-  const result = await db.query(query, [vanid]);
+  const result = await db.query(query, [credentials.vanid]);
   if (result.rows[0] !== undefined) {
     return result.rows;
   } else {
