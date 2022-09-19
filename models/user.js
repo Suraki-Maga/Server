@@ -176,7 +176,7 @@ const query = `SELECT schoolvan.id, schoolvan.vehicleno, schoolvan.vehicletype, 
 schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage,schoolvan.backimage,owner.name as ownername,owner.contact as ownercontact,driver.fullname as drivername,driver.contact as drivercontact from schoolvan INNER JOIN owner on owner.id=schoolvan.ownerid INNER join driver on driver.id=schoolvan.driverid`
 
 const school = await db.query(query)
-console.log(school.rows)
+// console.log(school.rows)
 
 return school.rows
 }

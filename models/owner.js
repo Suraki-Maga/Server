@@ -1,14 +1,16 @@
 const db = require("../db")
 const { BadRequestError, UnauthorizedError } = require("../utils/errors")
+const User = require("./user")
 
-class Owner {
+
+class Owner extends User{
     
     static async getOwner(userName) {
         // console.log("dil")
        // console.log(userName)
         const query = `Select owner.id,owner.name, owner.contact,owner.email,owner.bank_acc,owner.scl_service_regno,owner.nic,owner.experience,owner.image from owner inner join users on owner.id=users.id where users.username=$1`
         const result=await db.query(query,[userName])
-        console.log(result.rows[0])
+        // console.log(result.rows[0])
         return result.rows[0]
     }
 
@@ -45,12 +47,12 @@ class Owner {
                         WHERE id=$9`
 
         const result = await db.query(query,[credentials.name,credentials.contact,credentials.email,credentials.bank_acc,credentials.scl_service_regno,credentials.nic,credentials.experience,credentials.image,credentials.id])
-        console.log(result.rows[0])
+        return result.rows[0]
     }
 
     static async getdriverdetails(){
         const tbl = "driver"
-        const query = `select id,fullname,licenceno,contact,nic,image,avail from driver`
+        const query = `select id,fullname,licenceno,contact,nic,image,avail from driver ORDER BY id ASC`
         const result=await db.query(query)
         return result.rows
     }
@@ -89,7 +91,6 @@ class Owner {
         });
         const query = `select id,fullname,licenceno,contact,nic,image from driver where id=$1`
         const result=await db.query(query,[credentials.data])
-        console.log(result.rows[0])
         return result.rows[0]
     }
 
@@ -109,7 +110,6 @@ class Owner {
         const query1 = `UPDATE driver SET avail=$1 WHERE id=$2`
         const result1 = await db.query(query1,[0,credentials.driverid])
         const schoolvanid = result.rows[0]
-        console.log(schoolvanid)
         return schoolvanid
     }
 
@@ -131,9 +131,8 @@ class Owner {
     }
 
     static async getschoolvandetails(ownerid){
-      const query = `select schoolvan.id,schoolvan.vehicleno,schoolvan.vehicletype,schoolvan.seats,schoolvan.charge,schoolvan.startlocation,schoolvan.ownerid,schoolvan.frontimage,driver.fullname from schoolvan INNER JOIN driver ON schoolvan.driverid=driver.id WHERE (schoolvan.approved=$1 AND schoolvan.ownerid=$2)`
+      const query = `select schoolvan.id,schoolvan.vehicleno,schoolvan.vehicletype,schoolvan.seats,schoolvan.charge,schoolvan.startlocation,schoolvan.ownerid,schoolvan.frontimage,schoolvan.driverid,schoolvan.ad,driver.fullname from schoolvan INNER JOIN driver ON schoolvan.driverid=driver.id WHERE (schoolvan.approved=$1 AND schoolvan.ownerid=$2) ORDER BY id ASC`
       const result = await db.query(query,[1,ownerid])
-      console.log(result)
       return result.rows
     }
 
@@ -152,9 +151,146 @@ class Owner {
     static async getschoolsSchoolvan(){
       const query = `select * from schoolvanschools`
       const result = await db.query(query)
-      console.log(result)
       return result.rows
     }
+
+    static async updatesclvanDetails(credentials){
+      const requiredFields = ["id","seats","charge","startlocation","driverid"];
+      requiredFields.forEach((property) => {
+        if (!credentials.hasOwnProperty(property)) {
+          throw new BadRequestError(`Missing ${property} in request body.`);
+        }
+      });
+      const query = `UPDATE schoolvan
+                      SET (seats,charge,startlocation,driverid) = ($1,$2,$3,$4)
+                      WHERE id=$5`
+      
+      const result = db.query(query,[credentials.seats,credentials.charge,credentials.startlocation,credentials.driverid,credentials.id])
+      return result.rows
+  }
+
+  static async removeSchoolstoSchoolvan(credentials){
+    const requiredFields = ["sclvanid"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `DELETE FROM schoolvanschools WHERE sclvanid=$1`
+    
+    const result = db.query(query,[credentials.sclvanid])
+    return true
+  }
+  static async assignnewdriver(credentials){
+    const requiredFields = ["sclvanid","crrdriver","newdriver"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `UPDATE schoolvan SET driverid = $1 WHERE id=$2`
+    const result = db.query(query,[credentials.newdriver,credentials.sclvanid])
+    const query1 = `UPDATE driver SET avail = $1 WHERE id=$2`
+    const result1 = db.query(query1,[1,credentials.crrdriver])
+    const result2 = db.query(query1,[0,credentials.newdriver])
+    return true
+  }
+
+  static async removeVehicle(credentials){
+    const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `DELETE FROM schoolvan WHERE id=$1`
+    db.query(query,[credentials.id])
+}
+
+static async getOwnersAdDetails(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select schoolvan.id,schoolvan.vehicleno,schoolvan.vehicletype,schoolvan.seats,schoolvan.charge,schoolvan.startlocation,schoolvan.description,schoolvan.title,schoolvan.ac,schoolvan.frontimage,count(student.vanid) as avail from schoolvan left join student on student.vanid=schoolvan.id where schoolvan.ownerid=$1 and schoolvan.approved=$2 and schoolvan.ad=$3 group by schoolvan.id`
+    const result = await db.query(query,[credentials.id,1,true])
+    return result.rows
+}
+static async getAllAdDetails(){
+    const query = `select schoolvan.id,schoolvan.vehicleno,schoolvan.vehicletype,schoolvan.seats,schoolvan.charge,schoolvan.startlocation,schoolvan.description,schoolvan.title,schoolvan.ac,schoolvan.frontimage,count(student.vanid) as avail from schoolvan left join student on student.vanid=schoolvan.id where schoolvan.approved=$1 and schoolvan.ad=$2 group by schoolvan.id`
+    const result = await db.query(query,[1,true])
+    return result.rows
+}
+
+
+static async getAdDetailsSchools(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select school.name from school inner join schoolvanschools on school.id=schoolvanschools.sclid where schoolvanschools.sclvanid=$1`
+    const result = await db.query(query,[credentials.id])
+    return result.rows
+}
+
+static async getAdDetailsImages(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select image from schoolvanimages where schoolvanimages.sclvanid=$1`
+    const result = await db.query(query,[credentials.id])
+    return result.rows
+}
+
+static async InsertAdImage(credentials){
+  const requiredFields = ["id","image"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `insert into schoolvanimages(image,sclvanid) VALUES($1,$2)`
+    const result = await db.query(query,[credentials.image,credentials.id])
+    return result.rows[0]
+}
+
+static async removeAd(credentials){
+  const requiredFields = ["id","title","description"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `UPDATE schoolvan SET (title,description,ad) = ($1,$2,$3) WHERE id=$4`
+    const result = await db.query(query,[credentials.title,credentials.description,true,credentials.id])
+    return result.rows[0]
+}
+
+static async getCount(){
+  const query = `select schoolvan.id,schoolvan.vehicleno,schoolvan.seats,count(student.vanid) as avail from schoolvan left join student on student.vanid=schoolvan.id group by schoolvan.id`
+  const result = await db.query(query)
+  return result.rows
+}
+
+static async removeAd(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `UPDATE schoolvan SET ad = $1 WHERE id=$2`
+    const result = await db.query(query,[false,credentials.id])
+    return result.rows[0]
+}
+    
 }
 
 module.exports = Owner
