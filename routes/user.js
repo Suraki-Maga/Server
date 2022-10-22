@@ -21,7 +21,7 @@ router.get("/schoolvanadvertisement", security.requireAuthorizedUser, async (req
   try {
     const schools=User.getSchoolAdvertisement();
     schools.then(function(result) {
-      console.log(result)
+      // console.log(result)
       return res.status(200).json( {result} )
     })
   } catch (error) {
@@ -30,11 +30,10 @@ router.get("/schoolvanadvertisement", security.requireAuthorizedUser, async (req
   }
 });
 
-router.get("/destinationschools", security.requireAuthorizedUser, async (req, res) => {
+router.post("/destinationschools", security.requireAuthorizedUser, async (req, res) => {
   try {
     const destinationschools=User.getDestinationSchools(req.body);
     destinationschools.then(function(result) {
-      console.log(result)
       return res.status(200).json( {result} )
     })
   } catch (error) {

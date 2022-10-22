@@ -34,7 +34,7 @@ class Parent {
       //Function to get children vehicle details
       static async getChildVehicle(request) {
     
-        const query = `Select schoolvan.frontimage,schoolvan.backimage,owner.name as ownername,owner.contact as ownercontact,driver.fullname as drivername,driver.contact as drivercontact,student.payment_status from student inner join schoolvan on student.vanid=schoolvan.id inner join driver on schoolvan.driverid=driver.id inner join owner
+        const query = `Select schoolvan.frontimage,schoolvan.backimage,owner.name as ownername,owner.contact as ownercontact,driver.fullname as drivername,driver.contact as drivercontact,student.payment_status,student.monthly_charge from student inner join schoolvan on student.vanid=schoolvan.id inner join driver on schoolvan.driverid=driver.id inner join owner
         ON schoolvan.ownerid=owner.id where student.id=$1`
         const childvehicle=await db.query(query,[request.studentid])
         
@@ -72,12 +72,15 @@ class Parent {
     }
 
       //Function to get children names with the monthly charges
-      static async getChildrenCharges(vanid,userName) {
-    
-        const destinationSchools = User.getDestinationSchools(vanid);
+      static async getChildrenRequest(vanid,userName) {
+
+        const query = `SELECT student.id,student.fullname,student.vanid,student.school,student.parentid,
+        student_location.latitude,student_location.longitude,school.latitude,school.longtitude,
+        schoolvan.charge from student INNER JOIN schoolvanschools ON student.school = schoolvanschools.sclid
+        INNER JOIN student_location ON student_location.id =student.id INNER JOIN school ON school.id=student.school INNER JOIN schoolvan
+        ON schoolvan.id =schoolvanschools.sclvanid WHERE student.parentid=$2 and schoolvanschools.sclvanid=$1`
         
-        const query = `Select student.id,student.fullname,school.name,AGE(CURRENT_DATE, student.birthday),student.image,student.vanid from student inner join users on student.parentid=users.id INNER JOIN school ON student.school=school.id where users.username=$1`
-        const children=await db.query(query,[userName])
+        const children=await db.query(query,[userName,vanid])
         
         if(children.rows){
         return children.rows

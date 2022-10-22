@@ -9,7 +9,7 @@ const security = require("../middleware/security")
       console.log(username)
       const children=Parent.getChildren(username);
       children.then(function(result) {
-        console.log(result)
+        // console.log(result)
         return res.status(200).json( {result} )
       })
     } catch (error) {
@@ -34,12 +34,25 @@ const security = require("../middleware/security")
     try {
       const childvan=Parent.getChildVehicle(req.body);
       childvan.then(function(result) {
-        console.log(result)
+        // console.log(result)
         return res.status(200).json( {result} )
       })
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Server Error");
+    }
+  });
+
+  router.post("/requestschoolchildren",security.requireAuthorizedUser, async(req, res, next)=>{
+    try{
+      const username = res.locals.user.data;
+      const respond = Parent.getChildrenRequest(username,req.body)
+      respond.then(function(result){
+        console.log(result)
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
     }
   });
 
