@@ -184,6 +184,7 @@ return school.rows
 //Function to retreive destination schools of vans
 static async getDestinationSchools(credentials) {
   
+  credentials.vanid = BigInt(credentials.vanid)
   const query = `select school.name,school.latitude,school.longtitude from ((school inner join schoolvanschools on schoolvanschools.sclid=school.id)
   inner join schoolvan on schoolvan.id=schoolvanschools.sclvanid) where schoolvan.id=$1`;
 

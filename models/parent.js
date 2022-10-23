@@ -1,9 +1,6 @@
 const express = require("express")
-const User = require("../models/user")
-const router = express.Router()
 const db = require("../db")
 const security = require("../middleware/security")
-const { createUserJwt } = require("../utils/tokens")
 
 class Parent {
 
@@ -39,7 +36,6 @@ class Parent {
         const childvehicle=await db.query(query,[request.studentid])
         
         if(childvehicle.rows){
-            console.log(childvehicle.rows[0])
         return childvehicle.rows[0]
         }
         else {
@@ -72,15 +68,19 @@ class Parent {
     }
 
       //Function to get children names with the monthly charges
-      static async getChildrenRequest(vanid,userName) {
+      static async getChildrenRequest(userName,credentials) {
+
+        const userid = await Parent.fetchUserid(userName);
+        console.log(userid)
+        console.log(credentials.vanid)
 
         const query = `SELECT student.id,student.fullname,student.vanid,student.school,student.parentid,
         student_location.latitude,student_location.longitude,school.latitude,school.longtitude,
         schoolvan.charge from student INNER JOIN schoolvanschools ON student.school = schoolvanschools.sclid
         INNER JOIN student_location ON student_location.id =student.id INNER JOIN school ON school.id=student.school INNER JOIN schoolvan
-        ON schoolvan.id =schoolvanschools.sclvanid WHERE student.parentid=$2 and schoolvanschools.sclvanid=$1`
+        ON schoolvan.id =schoolvanschools.sclvanid WHERE student.parentid=$1 and schoolvanschools.sclvanid=$2`
         
-        const children=await db.query(query,[userName,vanid])
+        const children=await db.query(query,[userid.id,credentials.vanid])
         
         if(children.rows){
         return children.rows
@@ -94,10 +94,26 @@ class Parent {
      //Function to send a request
      static async sendRequest(credentials) {
 
-        const query = `INSERT INTO request(studentid,vanid,monthlycharge)
+        const query = `INSERT INTO request(student_id,van_id,monthlycharge)
         VALUES ($1,$2,$3) RETURNING id`
 
         const result = await db.query(query,[credentials.studentid,credentials.vanid,credentials.monthlycharge])
+
+        if(result)
+        {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
+    //Function to leave from a van
+    static async leaveVan(credentials) {
+
+        const query = `UPDATE student SET vanid = NULL,  payment_status= NULL WHERE id=$1;`
+
+        const result = await db.query(query,[credentials.studentid])
 
         if(result)
         {
