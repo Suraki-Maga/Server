@@ -1,9 +1,6 @@
 const express = require("express")
-const User = require("../models/user")
-const router = express.Router()
 const db = require("../db")
 const security = require("../middleware/security")
-const { createUserJwt } = require("../utils/tokens")
 
 class Parent {
 
@@ -20,11 +17,26 @@ class Parent {
     //Function to get children names
     static async getChildren(userName) {
     
-        const query = `Select student.id,student.fullname,student.school,AGE(CURRENT_DATE, student.birthday),student.image,student.vanid from student inner join users on student.parentid=users.id where users.username=$1`
+        const query = `Select student.id,student.fullname,school.name as school,AGE(CURRENT_DATE, student.birthday),student.image,student.vanid from student inner join users on student.parentid=users.id INNER JOIN school ON student.school=school.id where users.username=$1`
         const children=await db.query(query,[userName])
         
         if(children.rows){
         return children.rows
+        }
+        else {
+            return "false";
+        }
+    }
+
+      //Function to get children vehicle details
+      static async getChildVehicle(request) {
+    
+        const query = `Select schoolvan.frontimage,schoolvan.backimage,owner.name as ownername,owner.contact as ownercontact,driver.fullname as drivername,driver.contact as drivercontact,student.payment_status,student.monthly_charge from student inner join schoolvan on student.vanid=schoolvan.id inner join driver on schoolvan.driverid=driver.id inner join owner
+        ON schoolvan.ownerid=owner.id where student.id=$1`
+        const childvehicle=await db.query(query,[request.studentid])
+        
+        if(childvehicle.rows){
+        return childvehicle.rows[0]
         }
         else {
             return "false";
@@ -56,16 +68,59 @@ class Parent {
     }
 
       //Function to get children names with the monthly charges
-      static async getChildrenCharges(userName) {
-    
-        const query = `Select student.id,student.fullname,student.school,AGE(CURRENT_DATE, student.birthday),student.image,student.vanid from student inner join users on student.parentid=users.id where users.username=$1`
-        const children=await db.query(query,[userName])
+      static async getChildrenRequest(userName,credentials) {
+
+        const userid = await Parent.fetchUserid(userName);
+        console.log(userid)
+        console.log(credentials.vanid)
+
+        const query = `SELECT student.id,student.fullname,student.vanid,student.school,student.parentid,
+        student_location.latitude,student_location.longitude,school.latitude,school.longtitude,
+        schoolvan.charge from student INNER JOIN schoolvanschools ON student.school = schoolvanschools.sclid
+        INNER JOIN student_location ON student_location.id =student.id INNER JOIN school ON school.id=student.school INNER JOIN schoolvan
+        ON schoolvan.id =schoolvanschools.sclvanid WHERE student.parentid=$1 and schoolvanschools.sclvanid=$2`
+        
+        const children=await db.query(query,[userid.id,credentials.vanid])
         
         if(children.rows){
         return children.rows
         }
         else {
             return "false";
+        }
+    }
+
+
+     //Function to send a request
+     static async sendRequest(credentials) {
+
+        const query = `INSERT INTO request(student_id,van_id,monthlycharge)
+        VALUES ($1,$2,$3) RETURNING id`
+
+        const result = await db.query(query,[credentials.studentid,credentials.vanid,credentials.monthlycharge])
+
+        if(result)
+        {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
+    //Function to leave from a van
+    static async leaveVan(credentials) {
+
+        const query = `UPDATE student SET vanid = NULL,  payment_status= NULL WHERE id=$1`
+
+        const result = await db.query(query,[credentials.studentid])
+
+        if(result)
+        {
+            return true
+        }
+        else {
+            return false
         }
     }
 }

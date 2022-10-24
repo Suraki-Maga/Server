@@ -8,11 +8,10 @@ const security=require("./middleware/security")
 // var cookieParser = require('cookie-parser');
 const authRoutes = require("./routes/auth")
 const driverRoutes = require("./routes/driverauth")
-
 const userRoutes = require ("./routes/user")
-
 const ownerRoutes = require("./routes/ownerauth")
 const parentRoutes = require ("./routes/parent")
+const adminRoutes = require ("./routes/admin")
 
 const sessions = require('express-session');
 
@@ -52,6 +51,7 @@ app.use("/ownerauth", ownerRoutes)
 
 app.use("/parent", parentRoutes)
 
+app.use("/admin", adminRoutes)
 
 /** Handle 404 errors -- this matches everything */
 app.use((req, res, next) => {
