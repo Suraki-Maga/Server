@@ -261,7 +261,7 @@ static async InsertAdImage(credentials){
     return result.rows[0]
 }
 
-static async removeAd(credentials){
+static async InsertAdDetails(credentials){
   const requiredFields = ["id","title","description"];
     requiredFields.forEach((property) => {
       if (!credentials.hasOwnProperty(property)) {
@@ -290,7 +290,209 @@ static async removeAd(credentials){
     const result = await db.query(query,[false,credentials.id])
     return result.rows[0]
 }
-    
+
+static async getRequestDetails(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+  const query = `select request.id,request.student_id,request.van_id,schoolvan.vehicleno,request.monthlycharge,student.fullname as studentname,student.school,parent.name as parentname,parent.contact,student_location.longitude,student_location.latitude from request inner join student on student.id=request.student_id inner join schoolvan on schoolvan.id=request.van_id inner join parent on parent.id=student.parentid inner join student_location on student_location.id=student.id where (schoolvan.ownerid=$1 AND request.status=$2) ORDER BY request.id ASC`
+  const result = await db.query(query,[credentials.id,true])
+  return result.rows
+} 
+
+static async EditMonthlyCharge(credentials){
+  const requiredFields = ["id","charge"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `UPDATE request SET monthlycharge = $1 WHERE id=$2`
+    const result = await db.query(query,[credentials.charge,credentials.id])
+    return result.rows[0]
+}
+
+static async AcceptRequest(credentials){
+  const requiredFields = ["student_id","id","van_id","charge","date"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `UPDATE request SET req_status = $1 WHERE id=$2`
+    const result = await db.query(query,["accepted",credentials.id])
+    const query2 = `UPDATE request SET status = $1 WHERE student_id=$2`
+    const result2 = await db.query(query2,[false,credentials.student_id])
+    const query1 = `UPDATE student SET (vanid,monthly_charge,payment_date,sclvan_status) = ($1,$2,$3,$4) WHERE id=$5`
+    const result1 = await db.query(query1,[credentials.van_id,credentials.charge,credentials.date,null,credentials.student_id])
+    return result1.rows[0]
+}
+
+static async RejectRequest(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `UPDATE request SET (status,req_status) = ($1,$2) WHERE id=$3`
+    const result = await db.query(query,[false,"rejected",credentials.id])
+    return result.rows[0]
+}
+
+static async getTotalIncome(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select sum(student.monthly_charge) as total from student inner join schoolvan on student.vanid=schoolvan.id where (EXTRACT (MONTH FROM payment_date) = EXTRACT (MONTH FROM current_date) and schoolvan.ownerid=$1)`
+    const result = await db.query(query,[credentials.id])
+    return result.rows[0]
+}
+
+static async getCurrentIncome(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select sum(student.monthly_charge) as current from student inner join schoolvan on student.vanid=schoolvan.id where (EXTRACT (MONTH FROM payment_date) = EXTRACT (MONTH FROM current_date) and schoolvan.ownerid=$1 and student.payment_status=$2)`
+    const result = await db.query(query,[credentials.id,true])
+    return result.rows[0]
+}
+static async getYetToPayList(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select student.fullname,student.monthly_charge,student.payment_date from student inner join schoolvan on student.vanid=schoolvan.id where (EXTRACT (MONTH FROM payment_date) = EXTRACT (MONTH FROM current_date) and schoolvan.ownerid=$1 and student.payment_status=$2 and payment_date>=current_date)`
+    const result = await db.query(query,[credentials.id,false])
+    return result.rows
+}
+static async getUnpaidList(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select student.id,student.fullname,student.monthly_charge,student.sclvan_status,student.payment_date,current_date-student.payment_date as due,schoolvan.vehicleno,parent.contact from student 
+    inner join schoolvan on student.vanid=schoolvan.id
+    inner join parent on student.parentid=parent.id
+    where (schoolvan.ownerid=$1 and student.payment_status=$2 and payment_date < current_date)`
+    const result = await db.query(query,[credentials.id,false])
+    return result.rows
+}
+static async BanAStudent(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `UPDATE student SET sclvan_status = $1 WHERE id=$2`
+    const result = await db.query(query,["banned",credentials.id])
+    return result.rows[0]
+}
+static async UnbanAStudent(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `UPDATE student SET sclvan_status = $1 WHERE id=$2`
+    const result = await db.query(query,[null,credentials.id])
+    return result.rows[0]
+}
+static async RemoveAStudent(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `UPDATE student SET (sclvan_status,vanid,monthly_charge,payment_status,payment_date) = ($1,$2,$3,$4,$5) WHERE id=$6`
+    const result = await db.query(query,["removed",null,null,null,null,credentials.id])
+    return result.rows[0]
+}
+static async getcomplaints(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select complaints.id,complaints.date,complaints.complaint,complaints.status,schoolvan.vehicleno,parent.name,parent.contact from complaints
+    inner join schoolvan on complaints.vanid=schoolvan.id
+    inner join parent on complaints.parentid=parent.id
+    where schoolvan.ownerid=$1`
+    const result = await db.query(query,[credentials.id])
+    const query1 = `select count(complaints.status) from complaints inner join schoolvan on complaints.vanid=schoolvan.id where status=$1 and schoolvan.ownerid=$2`
+    const result1 = await db.query(query1,['pending',credentials.id])
+    const query2 = `select count(complaints.status) from complaints inner join schoolvan on complaints.vanid=schoolvan.id where status=$1 and schoolvan.ownerid=$2`
+    const result2 = await db.query(query2,['urgent',credentials.id])
+    const query3 = `select count(complaints.status) from complaints inner join schoolvan on complaints.vanid=schoolvan.id where status=$1 and schoolvan.ownerid=$2`
+    const result3 = await db.query(query3,['closed',credentials.id])
+    return {complaints:result.rows,pending:result1.rows[0],urgent:result2.rows[0],closed:result3.rows[0]}
+}
+static async getReviews(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select reviews.date,reviews.review,reviews.feedback,schoolvan.vehicleno,parent.name from reviews
+    inner join schoolvan on reviews.vanid=schoolvan.id
+    inner join parent on reviews.parentid=parent.id
+    where schoolvan.ownerid=$1`
+    const result = await db.query(query,[credentials.id])
+    const query1 = `select count(reviews.review) from reviews inner join schoolvan on reviews.vanid=schoolvan.id where review=$1 and schoolvan.ownerid=$2`
+    const result1 = await db.query(query1,[1,credentials.id])
+    const query2 = `select count(reviews.review) from reviews inner join schoolvan on reviews.vanid=schoolvan.id where review=$1 and schoolvan.ownerid=$2`
+    const result2 = await db.query(query2,[2,credentials.id])
+    const query3 = `select count(reviews.review) from reviews inner join schoolvan on reviews.vanid=schoolvan.id where review=$1 and schoolvan.ownerid=$2`
+    const result3 = await db.query(query3,[3,credentials.id])
+    const query4 = `select count(reviews.review) from reviews inner join schoolvan on reviews.vanid=schoolvan.id where review=$1 and schoolvan.ownerid=$2`
+    const result4 = await db.query(query4,[4,credentials.id])
+    const query5 = `select count(reviews.review) from reviews inner join schoolvan on reviews.vanid=schoolvan.id where review=$1 and schoolvan.ownerid=$2`
+    const result5 = await db.query(query5,[5,credentials.id])
+    const query6 = `select count(reviews.review) from reviews inner join schoolvan on reviews.vanid=schoolvan.id where schoolvan.ownerid=$1`
+    const result6 = await db.query(query6,[credentials.id])
+    return {
+      reviews:result.rows,
+      r5:result5.rows[0],
+      r4:result4.rows[0],
+      r3:result3.rows[0],
+      r2:result2.rows[0],
+      r1:result1.rows[0],
+      rt:result6.rows[0]
+    }
+}
+static async getStudentDetails(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+    const query = `select student.id,student.fullname,student.sclvan_status,student.monthly_charge,student.image,(EXTRACT(YEAR FROM age(student.birthday))),student.school,parent.name as parentName,parent.contact from student 
+    inner join schoolvan on student.vanid=schoolvan.id 
+    inner join parent on student.parentid=parent.id
+    where schoolvan.id=$1`
+    const result = await db.query(query,[credentials.id])
+    console.log(result.rows)
+    return result.rows
+}
 }
 
 module.exports = Owner

@@ -310,5 +310,187 @@ router.get("/getownerdetails",security.requireAuthorizedUser, async (req, res, n
       next(err)
     }
   })
+  router.get("/getRequestDetails",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      const username = res.locals.user.data;
+      console.log(username)
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getRequestDetails(ownerid)
+      respond.then(function(result) {
+        console.log("schoolvan requests fetched")
+        return res.status(200).json({ result })
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.post("/EditMonthlyCharge",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      console.log(req.body)
+      const respond = Owner.EditMonthlyCharge(req.body)
+      respond.then(function(result){
+        console.log("monthly charge updated")
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.post("/AcceptRequest",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      console.log(req.body)
+      const respond = Owner.AcceptRequest(req.body)
+      respond.then(function(result){
+        console.log("request accepted")
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.post("/RejectRequest",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      console.log(req.body)
+      const respond = Owner.RejectRequest(req.body)
+      respond.then(function(result){
+        console.log("request rejected")
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.get("/getTotalIncome",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      const username = res.locals.user.data;
+      console.log(username)
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getTotalIncome(ownerid)
+      respond.then(function(result){
+        console.log("Total income")
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.get("/getCurrentIncome",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      const username = res.locals.user.data;
+      console.log(username)
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getCurrentIncome(ownerid)
+      respond.then(function(result){
+        console.log("current income")
+        console.log(result)
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.get("/getYetToPayList",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      const username = res.locals.user.data;
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getYetToPayList(ownerid)
+      respond.then(function(result){
+        console.log("yet to pay list")
+        console.log(result)
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.get("/getUnpaidList",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      const username = res.locals.user.data;
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getUnpaidList(ownerid)
+      respond.then(function(result){
+        console.log("unpaid pay list")
+        console.log(result)
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.post("/BanAStudent",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      console.log(req.body)
+      const respond = Owner.BanAStudent(req.body)
+      respond.then(function(result){
+        console.log("banned")
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.post("/UnbanAStudent",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      console.log(req.body)
+      const respond = Owner.UnbanAStudent(req.body)
+      respond.then(function(result){
+        console.log("unbanned")
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.post("/RemoveAStudent",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      console.log(req.body)
+      const respond = Owner.RemoveAStudent(req.body)
+      respond.then(function(result){
+        console.log("removed")
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.get("/getcomplaints",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      const username = res.locals.user.data;
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getcomplaints(ownerid)
+      respond.then(function(result){
+        console.log("complaints list")
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.get("/getReviews",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      const username = res.locals.user.data;
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getReviews(ownerid)
+      respond.then(function(result){
+        console.log("reviews list")
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
+  router.post("/getStudentDetails",security.requireAuthorizedUser,async(req,res,next)=>{
+    try{
+      console.log(req.body)
+      const respond = Owner.getStudentDetails(req.body)
+      respond.then(function(result){
+        console.log("student list")
+        console.log(result)
+        return res.status(200).json({result})
+      })
+    } catch(err){
+      next(err)
+    }
+  })
 
 module.exports = router
