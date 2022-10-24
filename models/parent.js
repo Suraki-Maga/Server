@@ -111,7 +111,7 @@ class Parent {
     //Function to leave from a van
     static async leaveVan(credentials) {
 
-        const query = `UPDATE student SET vanid = NULL,  payment_status= NULL WHERE id=$1;`
+        const query = `UPDATE student SET vanid = NULL,  payment_status= NULL WHERE id=$1`
 
         const result = await db.query(query,[credentials.studentid])
 
