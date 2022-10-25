@@ -47,7 +47,9 @@ router.get("/getownerdetails",security.requireAuthorizedUser, async (req, res, n
 
   router.get("/getdriverdetails",security.requireAuthorizedUser,async(req, res, next)=>{
     try{
-      const respond = Owner.getdriverdetails(req.body)
+      const username = res.locals.user.data;
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getdriverdetails(ownerid)
       respond.then(function(result) {
         console.log("driver data fetched")
         return res.status(200).json({ result })

@@ -51,9 +51,9 @@ class Parent {
         const query = `INSERT INTO student(fullname,parentid,school,image,birthday)
         VALUES ($1,$2,$3,$4,$5) RETURNING id`
 
-        const result = await db.query(query,[credentials.fullname,userid.id,credentials.school,credentials.image,credentials.birthday])
+        const result = await db.query(query,[credentials.name,userid.id,credentials.school,credentials.url,credentials.dob])
 
-        const query1 = `INSERT INTO studentlocation(id,latitude,longitude)
+        const query1 = `INSERT INTO student_location(id,latitude,longitude)
         VALUES ($1,$2,$3) RETURNING id`
         
         const result1 = await db.query(query1,[result.rows[0].id,credentials.latitude,credentials.longitude])
