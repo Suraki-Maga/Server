@@ -50,10 +50,16 @@ class Owner extends User{
         return result.rows[0]
     }
 
-    static async getdriverdetails(){
+    static async getdriverdetails(credentials){
+      const requiredFields = ["id"];
+        requiredFields.forEach((property) => {
+          if (!credentials.hasOwnProperty(property)) {
+            throw new BadRequestError(`Missing ${property} in request body.`);
+          }
+        });
         const tbl = "driver"
-        const query = `select id,fullname,licenceno,contact,nic,image,avail from driver ORDER BY id ASC`
-        const result=await db.query(query)
+        const query = `select id,fullname,licenceno,contact,nic,image,avail from driver where ownerid=$1 ORDER BY id ASC`
+        const result=await db.query(query,[credentials.id])
         return result.rows
     }
 
@@ -219,7 +225,7 @@ static async getOwnersAdDetails(credentials){
     return result.rows
 }
 static async getAllAdDetails(){
-    const query = `select schoolvan.id,schoolvan.vehicleno,schoolvan.vehicletype,schoolvan.seats,schoolvan.charge,schoolvan.startlocation,schoolvan.description,schoolvan.title,schoolvan.ac,schoolvan.frontimage,count(student.vanid) as avail from schoolvan left join student on student.vanid=schoolvan.id where schoolvan.approved=$1 and schoolvan.ad=$2 group by schoolvan.id`
+    const query = `select schoolvan.id,schoolvan.vehicleno,schoolvan.vehicletype,schoolvan.seats,schoolvan.charge,schoolvan.startlocation,schoolvan.description,schoolvan.title,schoolvan.ac,schoolvan.frontimage,count(student.vanid) as avail from schoolvan left join student on student.vanid=schoolvan.id where schoolvan.approved=$1 and schoolvan.ad=$2 group by schoolvan.id order by schoolvan.id DESC`
     const result = await db.query(query,[1,true])
     return result.rows
 }
