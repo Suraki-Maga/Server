@@ -87,5 +87,20 @@ const security = require("../middleware/security")
       res.status(500).send("Server Error");
     }
   });
+
+
+   //Route to mark absent
+   router.post("/markabsent", security.requireAuthorizedUser, async (req, res) => {
+    try {
+      const request=Parent.markAbsent(req.body);
+      request.then(function(result) {
+        console.log(result)
+        return res.status(200).json( {result} )
+      })
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Server Error");
+    }
+  });
   
   module.exports = router

@@ -73,6 +73,25 @@ class User extends Driver{
       [user.id,hashedPassword]
     )
 
+    if(credentials.type =="Parent")
+    {
+      const userResult2 = await db.query(
+        `INSERT INTO parent (id,name,contact)
+         VALUES ($1,$3,$2)
+        `,
+        [user.id,credentials.contact, credentials.username]
+      )
+    }
+    else if(credentials.type =="Owner")
+    {
+      const userResult2 = await db.query(
+        `INSERT INTO owner (id,name,contact)
+         VALUES ($1,$3,$2)
+        `,
+        [user.id,credentials.contact, credentials.username]
+      )
+    }
+
     return user
   }
 
@@ -173,7 +192,7 @@ static async getSchoolAdvertisement() {
    
 
 const query = `SELECT schoolvan.id, schoolvan.vehicleno, schoolvan.vehicletype, schoolvan.seats, schoolvan.charge,
-schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage,schoolvan.backimage,owner.name as ownername,owner.contact as ownercontact,driver.fullname as drivername,driver.contact as drivercontact from schoolvan INNER JOIN owner on owner.id=schoolvan.ownerid INNER join driver on driver.id=schoolvan.driverid`
+schoolvan.startlocation, schoolvan.description, schoolvan.title, schoolvan.ac, schoolvan.driverid,schoolvan.ownerid,schoolvan.frontimage,schoolvan.backimage,owner.name as ownername,owner.contact as ownercontact,driver.fullname as drivername,driver.contact as drivercontact,(schoolvan.seats-count(student.vanid)) as avail from schoolvan INNER JOIN owner on owner.id=schoolvan.ownerid INNER join driver on driver.id=schoolvan.driverid LEFT JOIN student on student.vanid=schoolvan.id GROUP BY schoolvan.id,owner.name,owner.contact,driver.fullname,driver.contact`
 
 const school = await db.query(query)
 // console.log(school.rows)

@@ -17,7 +17,16 @@ class Parent {
     //Function to get children names
     static async getChildren(userName) {
     
-        const query = `Select student.id,student.fullname,school.name as school,AGE(CURRENT_DATE, student.birthday),student.image,student.vanid from student inner join users on student.parentid=users.id INNER JOIN school ON student.school=school.id where users.username=$1`
+        const query = `Select student.id,student.fullname,school.name as school,
+        AGE(CURRENT_DATE, student.birthday),student.image,student.vanid,schoolvan.frontimage,schoolvan.backimage,owner.name 
+        as ownername,owner.contact as ownercontact,driver.fullname 
+        as drivername,driver.contact as drivercontact,student.payment_status,
+        student.monthly_charge 
+        from student inner join users on student.parentid=users.id INNER JOIN 
+        school ON student.school=school.id  left join schoolvan on student.vanid=
+        schoolvan.id left join driver on schoolvan.driverid=driver.id 
+        left join owner
+        ON schoolvan.ownerid=owner.id where users.username=$1`
         const children=await db.query(query,[userName])
         
         if(children.rows){
@@ -31,8 +40,16 @@ class Parent {
       //Function to get children vehicle details
       static async getChildVehicle(request) {
     
-        const query = `Select schoolvan.frontimage,schoolvan.backimage,owner.name as ownername,owner.contact as ownercontact,driver.fullname as drivername,driver.contact as drivercontact,student.payment_status,student.monthly_charge from student inner join schoolvan on student.vanid=schoolvan.id inner join driver on schoolvan.driverid=driver.id inner join owner
-        ON schoolvan.ownerid=owner.id where student.id=$1`
+        const query = `Select student.id,student.fullname,school.name as school,
+        AGE(CURRENT_DATE, student.birthday),student.image,student.vanid,schoolvan.frontimage,schoolvan.backimage,owner.name 
+        as ownername,owner.contact as ownercontact,driver.fullname 
+        as drivername,driver.contact as drivercontact,student.payment_status,
+        student.monthly_charge 
+        from student inner join users on student.parentid=users.id INNER JOIN 
+        school ON student.school=school.id  left join schoolvan on student.vanid=
+        schoolvan.id left join driver on schoolvan.driverid=driver.id 
+        left join owner
+        ON schoolvan.ownerid=owner.id where users.username=$1`
         const childvehicle=await db.query(query,[request.studentid])
         
         if(childvehicle.rows){
@@ -115,7 +132,23 @@ class Parent {
 
         const result = await db.query(query,[credentials.studentid])
 
-        if(result)
+        if(result.rows[0]!=null)
+        {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
+    //Function to markabsent
+    static async markAbsent(credentials) {
+
+        const query = `UPDATE student SET morning_state = $2,  evening_state= $3 WHERE id=$1 RETURNING id`
+
+        const result = await db.query(query,[credentials.studentid,credentials.morning,credentials.evening])
+
+        if(result.rows[0]!=null)
         {
             return true
         }
