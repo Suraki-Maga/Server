@@ -20,11 +20,13 @@ const security = require("../middleware/security")
   });
 
   //Route to add a child
-  router.post("/addchild",security.requireAuthorizedUser, async(req, res, next)=>{
+  router.post("/addChild",security.requireAuthorizedUser, async(req, res, next)=>{
     try{
+      console.log("addChild")
       const username = res.locals.user.data;
       const respond = Parent.addChild(username,req.body)
       respond.then(function(result){
+        console.log("add child")
         return res.status(200).json({result})
       })
     } catch(err){
