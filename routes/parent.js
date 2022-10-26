@@ -78,7 +78,7 @@ router.post(
 router.post(
   "/sendrequest",
   security.requireAuthorizedUser,
-  async (req, res) => {
+  async (req, res, next) => {
     try {
       const request = Parent.sendRequest(req.body);
       request.then(function (result) {
@@ -86,8 +86,7 @@ router.post(
         return res.status(200).json({ result });
       });
     } catch (error) {
-      console.error(error.message);
-      res.status(500).send("Server Error");
+      next(error);
     }
   }
 );
@@ -121,7 +120,9 @@ router.post("/markabsent", security.requireAuthorizedUser, async (req, res) => {
 });
 router.post("/getBio", security.requireAuthorizedUser, async (req, res) => {
   try {
-    const request = Parent.getBio(req.body);
+    const username = res.locals.user.data;
+    console.log(username);
+    const request = Parent.getBio(username);
     request.then(function (result) {
       console.log(result);
       return res.status(200).json({ result });

@@ -155,7 +155,11 @@ class Parent {
   }
 
   static async getBio(username) {
-    const query = "";
+    let query = `select id from users where username=$1`;
+    let result = await db.query(query, [username]);
+    const query2 = "select * from parent where id =$1";
+    result = await db.query(query2, [result.rows[0].id]);
+    return result.rows[0];
   }
 }
 
