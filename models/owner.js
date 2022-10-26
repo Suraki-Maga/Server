@@ -279,9 +279,15 @@ static async InsertAdDetails(credentials){
     return result.rows[0]
 }
 
-static async getCount(){
-  const query = `select schoolvan.id,schoolvan.vehicleno,schoolvan.seats,count(student.vanid) as avail from schoolvan left join student on student.vanid=schoolvan.id group by schoolvan.id`
-  const result = await db.query(query)
+static async getCount(credentials){
+  const requiredFields = ["id"];
+    requiredFields.forEach((property) => {
+      if (!credentials.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in request body.`);
+      }
+    });
+  const query = `select schoolvan.id,schoolvan.vehicleno,schoolvan.seats,count(student.vanid) as avail from schoolvan left join student on student.vanid=schoolvan.id where ownerid=$1 group by schoolvan.id`
+  const result = await db.query(query,[credentials.id])
   return result.rows
 }
 
@@ -457,9 +463,9 @@ static async getReviews(credentials){
         throw new BadRequestError(`Missing ${property} in request body.`);
       }
     });
-    const query = `select reviews.date,reviews.review,reviews.feedback,schoolvan.vehicleno,parent.name from reviews
+    const query = `select reviews.date,reviews.review,reviews.feedback,schoolvan.vehicleno,student.fullname from reviews
     inner join schoolvan on reviews.vanid=schoolvan.id
-    inner join parent on reviews.parentid=parent.id
+    inner join student on reviews.studentid=student.id
     where schoolvan.ownerid=$1`
     const result = await db.query(query,[credentials.id])
     const query1 = `select count(reviews.review) from reviews inner join schoolvan on reviews.vanid=schoolvan.id where review=$1 and schoolvan.ownerid=$2`
