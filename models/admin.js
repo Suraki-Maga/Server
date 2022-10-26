@@ -79,6 +79,18 @@ class Admin {
         return owners.rows
     }
 
+    //Function to get Complaints
+    static async getComplaints(){
+
+          const query = `select complaints.id,complaints.date,complaints.complaint,complaints.status,schoolvan.vehicleno,parent.name,parent.contact from complaints
+          inner join schoolvan on complaints.vanid=schoolvan.id
+          inner join parent on complaints.parentid=parent.id`
+
+          const result = await db.query(query)
+         
+          return result.rows
+      }
+
 
     static async getSchoolVanDetails(credentials){
         console.log(credentials.ownerid);

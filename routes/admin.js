@@ -79,5 +79,17 @@ router.get("/dashboardcount", security.requireAuthorizedUser, async (req, res) =
     }
   });
 
+  router.get("/admincomplaints", security.requireAuthorizedUser, async (req, res) => {
+    try {
+      const owners=Admin.getComplaints();
+      owners.then(function(result) {
+        return res.status(200).json( {result} )
+      })
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Server Error");
+    }
+  });
+
   
 module.exports = router
