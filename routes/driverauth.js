@@ -329,6 +329,23 @@ router.get(
     }
   }
 );
+router.get(
+  "/loadSchoolLocations",
+  security.requireAuthorizedUser,
+  async (req, res, next) => {
+    try {
+      const userName = res.locals.user.data;
+      console.log(userName);
+      const respond = Map.loadSchoolLocations(userName);
+      respond.then(function (result) {
+        console.log(result);
+        return res.status(200).json({ result });
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 router.get(
   "/getDestination",
