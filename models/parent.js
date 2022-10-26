@@ -93,7 +93,7 @@ class Parent {
 
         const query = `SELECT student.id,student.fullname,student.vanid,student.school,student.parentid,
         student_location.latitude,student_location.longitude,school.latitude,school.longtitude,
-        schoolvan.charge from student INNER JOIN schoolvanschools ON student.school = schoolvanschools.sclid
+        schoolvan.charge,(student.distance*schoolvan.charge*25) AS monthly_charge from student INNER JOIN schoolvanschools ON student.school = schoolvanschools.sclid
         INNER JOIN student_location ON student_location.id =student.id INNER JOIN school ON school.id=student.school INNER JOIN schoolvan
         ON schoolvan.id =schoolvanschools.sclvanid WHERE student.parentid=$1 and schoolvanschools.sclvanid=$2`
         
