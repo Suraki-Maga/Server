@@ -291,7 +291,10 @@ router.get("/getownerdetails",security.requireAuthorizedUser, async (req, res, n
   })
   router.get("/getCount",security.requireAuthorizedUser,async(req,res,next)=>{
     try{
-      const respond = Owner.getCount()
+      const username = res.locals.user.data;
+      console.log(username)
+      const ownerid = await Owner.getOwnerid(username)
+      const respond = Owner.getCount(ownerid)
       respond.then(function(result) {
         console.log("student and seats counts fetched")
         return res.status(200).json({ result })
