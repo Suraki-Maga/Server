@@ -44,9 +44,10 @@ router.post(
   security.requireAuthorizedUser,
   async (req, res) => {
     try {
+      console.log(req.body);
       const childvan = Parent.getChildVehicle(req.body);
       childvan.then(function (result) {
-        // console.log(result)
+        console.log(result);
         return res.status(200).json({ result });
       });
     } catch (error) {
