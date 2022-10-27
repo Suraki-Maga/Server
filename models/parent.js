@@ -36,7 +36,7 @@ class Parent {
   //Function to get children vehicle details
   static async getChildVehicle(request) {
     const query = `Select student.id,student.fullname,school.name as school,
-        AGE(CURRENT_DATE, student.birthday),student.image,student.vanid,schoolvan.frontimage,schoolvan.backimage,owner.name 
+        AGE(CURRENT_DATE, student.birthday),student.image,student.vanid,schoolvan.frontimage,schoolvan.backimage,schoolvan.vehicleno,owner.name 
         as ownername,owner.contact as ownercontact,driver.fullname 
         as drivername,driver.contact as drivercontact,student.payment_status,
         student.monthly_charge 
