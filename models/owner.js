@@ -310,7 +310,13 @@ static async getRequestDetails(credentials){
         throw new BadRequestError(`Missing ${property} in request body.`);
       }
     });
-  const query = `select request.id,request.student_id,request.van_id,schoolvan.vehicleno,request.monthlycharge,student.fullname as studentname,student.school,parent.name as parentname,parent.contact,student_location.longitude,student_location.latitude from request inner join student on student.id=request.student_id inner join schoolvan on schoolvan.id=request.van_id inner join parent on parent.id=student.parentid inner join student_location on student_location.id=student.id where (schoolvan.ownerid=$1 AND request.status=$2) ORDER BY request.id ASC`
+  const query = `select request.id,request.student_id,request.van_id,schoolvan.vehicleno,request.monthlycharge,student.fullname as studentname,school.name as school,parent.name as parentname,parent.contact,student_location.longitude,student_location.latitude from request 
+  inner join student on student.id=request.student_id 
+  inner join schoolvan on schoolvan.id=request.van_id 
+  inner join parent on parent.id=student.parentid 
+  inner join student_location on student_location.id=student.id 
+  inner join school on school.id=student.school
+  where (schoolvan.ownerid=$1 AND request.status=$2) ORDER BY request.id ASC`
   const result = await db.query(query,[credentials.id,true])
   return result.rows
 } 
